@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
  * Планировщик, использующий кэшируемый пул потоков для операций ввода-вывода.
  * Похож на Schedulers.io() из RxJava.
  */
-public class CachedIOThreadScheduler implements Scheduler {
+public class IOThreadScheduler implements Scheduler {
     private final ExecutorService threadPool;
 
     public CachedIOThreadScheduler() {
