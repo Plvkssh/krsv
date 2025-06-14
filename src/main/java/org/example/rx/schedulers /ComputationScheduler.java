@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
  * Планировщик, который использует фиксированный пул потоков для выполнения вычислительных задач.
  * По аналогии с Schedulers.computation() из RxJava.
  */
-public class ComputationTaskScheduler implements Scheduler {
+public class ComputationScheduler implements Scheduler {
     private final ExecutorService taskExecutor;
 
     public ComputationTaskScheduler() {
