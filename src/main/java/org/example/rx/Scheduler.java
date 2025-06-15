@@ -1,13 +1,11 @@
-package org.example.rx;
+package com.example.rx;
+
+import java.util.concurrent.Executor;
 
 /**
- * Интерфейс для планирования выполнения задач на различных потоках.
+ * Определяет, в каком потоке выполняются задачи.
  */
 public interface Scheduler {
-
-    /**
-     * Запланировать выполнение переданной задачи.
-     * @param task Задача, которую необходимо выполнить
-     */
     void execute(Runnable task);
-} 
+    Executor getExecutor();
+}
