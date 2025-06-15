@@ -1,25 +1,22 @@
-package org.example.rx.schedulers;
+package com.example.rx.schedulers;
 
-import org.example.rx.Scheduler;
-
-import java.util.concurrent.ExecutorService;
+import com.example.rx.Scheduler;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Планировщик, использующий кэшируемый пул потоков для операций ввода-вывода.
- * Похож на Schedulers.io() из RxJava.
+ * Scheduler для I/O операций (CachedThreadPool).
  */
 public class IOThreadScheduler implements Scheduler {
-    private final ExecutorService threadPool;
+    private final Executor executor = Executors.newCachedThreadPool();
 
-    public CachedIOThreadScheduler() {
-        // Инициализируем кэшируемый пул потоков
-        this.threadPool = Executors.newCachedThreadPool();
+    @Override
+    public void execute(Runnable task) {
+        executor.execute(task);
     }
 
     @Override
-    public void execute(Runnable runnableTask) {
-        // Запускаем задачу в пуле потоков
-        threadPool.execute(runnableTask);
+    public Executor getExecutor() {
+        return executor;
     }
 }
