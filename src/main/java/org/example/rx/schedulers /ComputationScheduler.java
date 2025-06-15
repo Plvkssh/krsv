@@ -4,17 +4,21 @@ import com.example.rx.Scheduler;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-/**
- * Scheduler для CPU-интенсивных операций (FixedThreadPool).
- */
 public class ComputationScheduler implements Scheduler {
     private final Executor executor = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors()
     );
 
     @Override
-    public void execute(Runnable task) {
-        executor.execute(task);
+    public void schedule(Action action) {
+        executor.execute(() -> {
+            try {
+                action.run();
+            } catch (Exception e) {
+                Thread.currentThread().getUncaughtExceptionHandler()
+                    .uncaughtException(Thread.currentThread(), e);
+            }
+        });
     }
 
     @Override
