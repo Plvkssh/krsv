@@ -1,6 +1,6 @@
 package com.example.rx.schedulers;
 
-import com.example.rx.core.Scheduler;
+import com.example.rx.Scheduler;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
