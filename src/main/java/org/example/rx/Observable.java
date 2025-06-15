@@ -1,11 +1,7 @@
 package com.example.rx;
 
-import java.util.function.Function;
-import java.util.function.Predicate;
+import com.example.rx.utils.Functions.*;
 
-/**
- * Реактивный поток данных с поддержкой подписки и операторов.
- */
 public class Observable<T> {
     private final ObservableOnSubscribe<T> source;
 
@@ -13,47 +9,28 @@ public class Observable<T> {
         this.source = source;
     }
 
-    // Создаёт новый Observable
     public static <T> Observable<T> create(ObservableOnSubscribe<T> source) {
         return new Observable<>(source);
     }
 
-    // Подписка
     public Disposable subscribe(Observer<T> observer) {
-        source.subscribe(observer);
-        return () -> {}; // Заглушка Disposable
+        try {
+            source.subscribe(observer);
+        } catch (Exception e) {
+            observer.onError(e);
+        }
+        return () -> {};
     }
 
-    // Оператор map
     public <R> Observable<R> map(Function<T, R> mapper) {
         return new Observable<>(downstream -> 
             subscribe(new Observer<T>() {
                 @Override
                 public void onNext(T item) {
-                    downstream.onNext(mapper.apply(item));
-                }
-
-                @Override
-                public void onError(Throwable error) {
-                    downstream.onError(error);
-                }
-
-                @Override
-                public void onComplete() {
-                    downstream.onComplete();
-                }
-            })
-        );
-    }
-
-    // Оператор filter
-    public Observable<T> filter(Predicate<T> predicate) {
-        return new Observable<>(downstream -> 
-            subscribe(new Observer<T>() {
-                @Override
-                public void onNext(T item) {
-                    if (predicate.test(item)) {
-                        downstream.onNext(item);
+                    try {
+                        downstream.onNext(mapper.apply(item));
+                    } catch (Exception e) {
+                        downstream.onError(e);
                     }
                 }
 
@@ -70,7 +47,33 @@ public class Observable<T> {
         );
     }
 
-    // Оператор flatMap
+    public Observable<T> filter(Predicate<T> predicate) {
+        return new Observable<>(downstream -> 
+            subscribe(new Observer<T>() {
+                @Override
+                public void onNext(T item) {
+                    try {
+                        if (predicate.test(item)) {
+                            downstream.onNext(item);
+                        }
+                    } catch (Exception e) {
+                        downstream.onError(e);
+                    }
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    downstream.onError(error);
+                }
+
+                @Override
+                public void onComplete() {
+                    downstream.onComplete();
+                }
+            })
+        );
+    }
+
     public <R> Observable<R> flatMap(Function<T, Observable<R>> mapper) {
         return new Observable<>(downstream -> 
             subscribe(new Observer<T>() {
@@ -91,8 +94,8 @@ public class Observable<T> {
                             @Override
                             public void onComplete() {}
                         });
-                    } catch (Throwable error) {
-                        downstream.onError(error);
+                    } catch (Exception e) {
+                        downstream.onError(e);
                     }
                 }
 
@@ -104,6 +107,36 @@ public class Observable<T> {
                 @Override
                 public void onComplete() {
                     downstream.onComplete();
+                }
+            })
+        );
+    }
+
+    public Observable<T> subscribeOn(Scheduler scheduler) {
+        return new Observable<>(downstream -> 
+            scheduler.schedule(() -> {
+                subscribe(downstream);
+                return null;
+            })
+        );
+    }
+
+    public Observable<T> observeOn(Scheduler scheduler) {
+        return new Observable<>(downstream -> 
+            subscribe(new Observer<T>() {
+                @Override
+                public void onNext(T item) {
+                    scheduler.execute(() -> downstream.onNext(item));
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    scheduler.execute(() -> downstream.onError(error));
+                }
+
+                @Override
+                public void onComplete() {
+                    scheduler.execute(downstream::onComplete);
                 }
             })
         );
