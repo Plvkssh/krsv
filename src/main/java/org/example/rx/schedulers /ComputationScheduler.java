@@ -1,26 +1,24 @@
-package org.example.rx.schedulers;
+package com.example.rx.schedulers;
 
-import org.example.rx.Scheduler;
-
-import java.util.concurrent.ExecutorService;
+import com.example.rx.core.Scheduler;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Планировщик, который использует фиксированный пул потоков для выполнения вычислительных задач.
- * По аналогии с Schedulers.computation() из RxJava.
+ * Scheduler для CPU-интенсивных операций (FixedThreadPool).
  */
 public class ComputationScheduler implements Scheduler {
-    private final ExecutorService taskExecutor;
-
-    public ComputationTaskScheduler() {
-        // Создаем исполнитель с количеством доступных ядер процессора
-        int availableProcessors = Runtime.getRuntime().availableProcessors();
-        this.taskExecutor = Executors.newFixedThreadPool(availableProcessors);
-    }
+    private final Executor executor = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors()
+    );
 
     @Override
     public void execute(Runnable task) {
-        // Отправляем задачу на выполнение в пул потоков
-        taskExecutor.execute(task);
+        executor.execute(task);
+    }
+
+    @Override
+    public Executor getExecutor() {
+        return executor;
     }
 }
