@@ -4,15 +4,19 @@ import com.example.rx.Scheduler;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-/**
- * Scheduler для I/O операций (CachedThreadPool).
- */
 public class IOThreadScheduler implements Scheduler {
     private final Executor executor = Executors.newCachedThreadPool();
 
     @Override
-    public void execute(Runnable task) {
-        executor.execute(task);
+    public void schedule(Action action) {
+        executor.execute(() -> {
+            try {
+                action.run();
+            } catch (Exception e) {
+                Thread.currentThread().getUncaughtExceptionHandler()
+                    .uncaughtException(Thread.currentThread(), e);
+            }
+        });
     }
 
     @Override
